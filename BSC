@@ -1,0 +1,206 @@
+一、服务器配置要求
+全节点建议配置
+系统：Mac & Linux
+CPU：16核
+内存：64 GB 内存
+带宽：50M以上
+硬盘：大于2T固态SSD可用空间数据盘
+本次搭建使用配置
+系统：Centos7.9
+CPU：32核心64线程
+内存：64GB 内存
+带宽：100M上下对等
+硬盘：固态2T 机械2T 一共4T
+区域：HK
+系统：Ubuntu20.04
+CPU：16核心32线程
+内存：128GB 内存
+带宽：1G上下对等
+硬盘：固态8T
+区域：德国
+---
+BSC官方文档：https://docs.binance.org/smart-chain/developer/fullnode.html
+BSC快照github：https://github.com/binance-chain/bsc-snapshots
+BSC github地址：https://github.com/binance-chain/bsc/releases
+# 全新磁盘挂载，将vdb 改为您实际的磁盘
+全新磁盘挂载，将vdb 改为您实际的磁盘
+yum install -y parted                                        # 安装分区工具
+parted -s /dev/vdb mklabel gpt                      # 将vdb 转为gpt 动态分区，支持2T以上容量
+parted -s /dev/vdb mkpart primary 1 100%    # 新建主机分区
+mkfs -t ext4 /dev/vdb1                                    # 格式化主分区
+mkdir -p /eisc/a                                               # 创建挂载目录  -p 不存在子目录，自动创建子目录
+mount /dev/vdb1 /eisc/a                                # 将vdb 挂载到目录：/cipan/vdb1
+vi /etc/fstab                                                  # 编辑文件命令
+/dev/vdb1 /eisc/a ext4 defaults 1 1
+# 复制粘贴这句话
+# 然后 按键：ecs退出键 ， 按 shift 和 : 冒号 wq 保存
+ mount -a                                                       # 校验配置是否正确命令无报错，可以重启服务器
+df -hT                                                             # 重启服务器并查看挂载的分区
+
+二、系统环境准备
+更新软件包
+#Centos
+yum -y upgrade
+#Ubuntu
+apt-get update
+安装wget和git
+#Centos
+yum install wget -y
+yum install git -y
+#Ubuntu
+apt install wget -y
+apt install git -y
+安装Golang（安装 Go 主要是为了去编译 go-ethereum 源码）
+ #Centos
+ #yum install golang -y
+ #Ubuntu
+ #apt install golang -y
+此命令如果安装不上，请自行度娘手动编译安装最新版本Golang
+wget https://go.dev/dl/go1.18.2.linux-amd64.tar.gz
+rm -rf /usr/local/go && tar -C /usr/local -xzf go1.18.2.linux-amd64.tar.gz
+echo 'export PATH=$PATH:/usr/local/go/bin' >> $HOME/.profile
+source $HOME/.profile
+source ~/.profile
+go version
+如下显示则安装正确。
+
+[root@localhost ~]# go version
+go version go1.18.1 linux/amd64
+安装linux下的窗口管理器工具screen
+#Centos
+yum -y install screen
+#Ubuntu
+apt -y install screen
+三、节点安装部署
+在根目录创建jiedian文件夹用来存放节点程序，并在同时在jiedian里边创建一个kuaizhao文件夹，下载的快照数据
+
+1.务必使用固态硬盘并且可使用空间大于2T
+2.如果固态不够使用，可以把快照压缩包下载到机械硬盘里边，解压的时候解压到固态硬盘
+
+安装BSC版本的geth
+cd /		#进入根目录
+mkdir -p jiedian/kuaizhao		#创建jiedian及kuaizhao文件夹
+cd /jiedian		#进入jiedian文件夹
+yum install git
+git clone https://github.com/binance-chain/bsc
+cd bsc/
+make geth
+Ubuntu如果不能make使用下列命令跑一下就好了
+
+#Ubuntu
+yum -y install gcc automake autoconf libtool make
+配置路径
+
+vim /etc/profile
+#把下列一行写到最后边然后 :wq 保存退出
+export PATH=$PATH:/jiedian/bsc/build/bin
+#然后使命令生效
+source /etc/profile
+使用geth version确认安装正确
+
+配置创世区块
+wget https://github.com/binance-chain/bsc/releases/download/v1.1.9/mainnet.zip
+unzip mainnet.zip
+geth --datadir node init genesis.json
+下载BSC快照
+创建一个用来下载快照的screen窗口
+
+screen -S xiazai
+注意1：使用screen窗口期间可以退出或者关闭命令行对话框。
+注意2：退出当前窗口时用ctrl+ad（顺序按a和d字母即可），绝对不要用exit或ctrl+d退出会话。
+*注意2：退出会话后，可以用screen -x xiazai重新连接到会话。这样可以保持在shell下运行，网络中断不会影响。
+
+开始下载快照
+
+cd /jiedian/kuaizhao		#进入kuaizhao文件夹下载快照
+wget -O geth.tar.gz "最新下载地址"
+这里要下载很久，所以带宽要尽可能高。
+在这里获取最新全节点快照地址
+BSC快照github：https://github.com/binance-chain/bsc-snapshots
+
+下载完成后解压 并移动 chaindata 和 triecache 到./jiedian/bsc/node/geth/ 文件夹下
+
+tar zxvf geth.tar.gz -C /jiedian/kuaizhao
+mv /jiedian/kuaizhao/server/data-seed/geth/chaindata /jiedian/bsc/node/geth
+mv /jiedian/kuaizhao/server/data-seed/geth/triecache /jiedian/bsc/node/geth
+移动完毕以后退出screen的xiazai窗口，并创建bsc窗口并开始运行节点。
+
+退出当前窗口时用ctrl+ad（顺序按a和d字母即可），绝对不要用exit或ctrl+d退出会话
+
+ctrl+ad		#退出xiazai窗口
+启动之前可以先自行配置一下节点的配置文件
+
+修改BSC主网配置文件
+vim /jiedian/bsc/config.toml
+参数说明：
+
+TrieTimeout：这意味着geth将不会将状态持久化到数据库中，直到达到这个时间阈值，如果节点已经被强制关闭，它将从最后一个状态开始同步，这可能需要很长时间,可设置为：TrieTimeout
+= 200000000000
+注意：当TrieTimeout值设置的越大，系统崩溃后，节点恢复的时间越长
+
+HTTPHost: HTTP-RPC服务连接白名单，此参数的值默认为 "localhost"，仅允许本地可访问，如果需要外网访问节点请设置为："0.0.0.0"
+
+HTTPVirtualHosts：HTTP-RPC服务监听接口,此参数的值默认为["localhost"],可设置为：HTTPVirtualHosts = ["*"]
+
+HTTPPort：http协议rpc端口
+
+WSPort：websocket协议rpc端口
+
+WSHost：websocket服务连接白名单，此参数的值默认为 "localhost"，仅允许本地可访问，可设置为："0.0.0.0"
+
+WSOrigins：websocket服务监听接口,可设置为：WSOrigins = ["*"]
+
+三、启动BSC智能全节点
+screen -S bsc	#创建bsc节点启动窗口
+geth --config ./config.toml --datadir ./node --diffsync --cache 86016 --rpc.allow-unprotected-txs --txlookuplimit 0 --rpc.txfeecap 0 --rpc.gascap 0
+然后按ctrl+ad回到主会话即可
+
+参数说明：
+
+--config：指定BSC节点配置文件
+
+--datadir：指定BSC节点数据库和密钥存储库的数据目录(默认即可)
+
+--cache：设置最大分配给内部缓存的内存，默认:1024（设置越大，每次同步的数据越多，消耗的内存也越大）
+
+--rpc.allow-unprotected-txs：允许通过RPC提交不受保护的（非 EIP155 签名）交易
+
+--txlookuplimit 0 : 禁用删除事务索引
+
+--diffsync：启用差异同步协议来帮助节点更快地同步
+
+--rpc.txfeecap：无上限gas费用
+
+--rpc.gascap：无交易费用上限
+
+四、节点状态监听
+geth attach http://127.0.0.1:8545
+#这里的端口如果修改配置文件了，就填写配置文件的端口即可
+> eth.syncing	#查看当前区块情况
+说明：
+
+currentBlock: 14290861, #当前同步到区块高度
+highestBlock: 14297354, #主网当前高度
+knownStates:297473485,
+pulledStates: 297473485,
+startingBlock: 14270385
+
+> net.peerCount	#查看当前连接节点数量，结果为false为同步完成
+> eth.blockNumber #当前同步到区块高度
+退出请按 ctrl+d 回到主会话。
+
+停止节点
+
+打开bsc窗口
+
+ screen -x bsc
+然后按 ctrl+c 即可
+
+五、注意事项
+1.Centos设备配置同步情况
+
+我这台Centos的设备配置同步到最高区块用了大概10小时左右就追到了最高区块，在使用固态之前用机械硬盘试了一下，每秒1个块，可以说相当拉胯了，所以还是推荐直接上SSD，硬盘最好4T空间，否则区块数据都要1.9个T，如果只有2T空间根本不够用。
+
+2.Ubuntu设备配置同步情况
+
+这台就快多了，下载快照：2.5-3个小时，解压：30-40分钟，同步到最新区块：2.5个小时，主要是这台硬盘是全固态，内存也大，带宽也大，1G上下对等。
