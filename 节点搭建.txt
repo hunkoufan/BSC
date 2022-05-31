@@ -1,0 +1,82 @@
+ls
+screen -ls
+
+
+yum -y upgrade
+yum install wget -y
+yum install git -y
+sudo sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*
+sudo sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*
+yum -y upgrade
+yum install wget -y
+yum install git -y
+yum install vim -y
+yum install unzip -y
+ wget https://go.dev/dl/go1.18.2.linux-amd64.tar.gz
+tar -C /usr/local -xzf go1.18.2.linux-amd64.tar.gz
+yum install tar -y
+tar -C /usr/local -xzf go1.18.2.linux-amd64.tar.gz
+export PATH=$PATH:/usr/local/go/bin
+vim /etc/profile
+go version
+yum -y install screen
+
+ cd /
+mkdir -p jiedian/kuaizhao
+ cd jiedian/
+
+git clone https://github.com/binance-chain/bsc
+ yum -y install gcc automake autoconf libtool make
+cd bsc/
+make geth
+ vim /etc/profile
+ 
+ 
+export PATH=$PATH:/usr/local/go/bin
+export PATH=$PATH:/jiedian/bsc/build/bin
+
+ 
+ 
+source /etc/profile
+source ~/.bash_profile
+geth version
+ wget https://github.com/binance-chain/bsc/releases/download/v1.1.10/mainnet.zip
+
+unzip mainnet.zip
+ geth --datadir node init genesis.json
+screen -S xiazai
+
+screen -x xiazai
+//下载看不到
+
+cd /jiedian/kuaizhao
+yum install -y aria2c
+yum install -y aria2
+
+aria2c -o geth.tar.lz4 -x 4 -s 12 "https://tf-dex-prod-public-snapshot-site1.s3-accelerate.amazonaws.com/geth-20220527.tar.lz4?AWSAccessKeyId=AKIAYINE6SBQPUZDDRRO&Signature=UylY8sSBGJzMsMJwP%2Fo68MplUtI%3D&Expires=1656331880" "https://tf-dex-prod-public-snapshot.s3-accelerate.amazonaws.com/geth-20220527.tar.lz4?AWSAccessKeyId=AKIAYINE6SBQPUZDDRRO&Signature=l0sbJMq0amrFv03iHLutQ4oljYk%3D&Expires=1656331881" "https://tf-dex-prod-public-snapshot-site3.s3-accelerate.amazonaws.com/geth-20220527.tar.lz4?AWSAccessKeyId=AKIAYINE6SBQPUZDDRRO&Signature=jGy6CztCT4SDXHVqRbJkyTWthFQ%3D&Expires=1656331881"
+
+
+tar -I lz4 -xvf geth.tar.lz4
+
+yum install -y lz4
+tar -I lz4 -xvf geth.tar.lz4
+
+ rm -rf /jiedian/bsc/node/geth/chaindata/
+
+ mv /jiedian/kuaizhao/server/data-seed/geth/chaindata /jiedian/bsc/node/geth
+ mv /jiedian/kuaizhao/server/data-seed/geth/triecache /jiedian/bsc/node/geth
+
+
+
+yum -y install screen
+
+
+
+
+
+
+
+
+
+
+
